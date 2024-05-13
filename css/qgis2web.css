@@ -32,8 +32,8 @@
             border-top: unset!important;
         }
         .leaflet-popup-content {
-    max-width: 200px;
-    height: 200px;
+    max-width: 400px;
+    height: 400px;
     overflow-y: scroll;
         }
         th {
