@@ -1,0 +1,974 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css">
+        <link rel="stylesheet" href="css/L.Control.Layers.Tree.css">
+        <link rel="stylesheet" href="css/qgis2web.css">
+        <link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title></title>
+    </head>
+    <body>
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/L.Control.Layers.Tree.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="data/Lnsindelning_1.js"></script>
+        <script src="data/Grnsfrripjaktilvdalenskommun_2.js"></script>
+        <script src="data/NedanfrLappmarksgrnsen_3.js"></script>
+        <script src="data/OvanfrLapplandsgrnsen_4.js"></script>
+        <script src="data/GrnslvsomrdetillFinland_5.js"></script>
+        <script>
+        var highlightLayer;
+        function highlightFeature(e) {
+            highlightLayer = e.target;
+
+            if (e.target.feature.geometry.type === 'LineString' || e.target.feature.geometry.type === 'MultiLineString') {
+              highlightLayer.setStyle({
+                color: '#ffff00',
+              });
+            } else {
+              highlightLayer.setStyle({
+                fillColor: '#ffff00',
+                fillOpacity: 1
+              });
+            }
+        }
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        })
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        var autolinker = new Autolinker({truncate: {length: 30, location: 'smart'}});
+        function removeEmptyRowsFromPopupContent(content, feature) {
+         var tempDiv = document.createElement('div');
+         tempDiv.innerHTML = content;
+         var rows = tempDiv.querySelectorAll('tr');
+         for (var i = 0; i < rows.length; i++) {
+             var td = rows[i].querySelector('td.visible-with-data');
+             var key = td ? td.id : '';
+             if (td && td.classList.contains('visible-with-data') && feature.properties[key] == null) {
+                 rows[i].parentNode.removeChild(rows[i]);
+             }
+         }
+         return tempDiv.innerHTML;
+        }
+        document.querySelector(".leaflet-popup-pane").addEventListener("load", function(event) {
+          var tagName = event.target.tagName,
+            popup = map._popup;
+          // Also check if flag is already set.
+          if (tagName === "IMG" && popup && !popup._updated) {
+            popup._updated = true; // Set flag to prevent looping.
+            popup.update();
+          }
+        }, true);
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+            if (bounds_group.getLayers().length) {
+                map.fitBounds(bounds_group.getBounds());
+            }
+        }
+        map.createPane('pane_OSMStandard_0');
+        map.getPane('pane_OSMStandard_0').style.zIndex = 400;
+        var layer_OSMStandard_0 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            pane: 'pane_OSMStandard_0',
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_0;
+        map.addLayer(layer_OSMStandard_0);
+        function pop_Lnsindelning_1(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>LÄN</strong><br />' + (feature.properties['lan_namn'] !== null ? autolinker.link(feature.properties['lan_namn'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>BLÄSAND</strong><br />' + (feature.properties['blasand__1'] !== null ? autolinker.link(feature.properties['blasand__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_blasa'] !== null ? '<img src="images/' + String(feature.properties['bild_blasa']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasand_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['blasand_aj'] !== null ? autolinker.link(feature.properties['blasand_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasand_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['blasand_kl'] !== null ? autolinker.link(feature.properties['blasand_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasand_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['blasand_ka'] !== null ? autolinker.link(feature.properties['blasand_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>BLÄSGÅS</strong><br />' + (feature.properties['blasgas__1'] !== null ? autolinker.link(feature.properties['blasgas__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_blasg'] !== null ? '<img src="images/' + String(feature.properties['bild_blasg']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasgas_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['blasgas_aj'] !== null ? autolinker.link(feature.properties['blasgas_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasgas_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['blasgas_kl'] !== null ? autolinker.link(feature.properties['blasgas_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasgas_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['blasgas_ka'] !== null ? autolinker.link(feature.properties['blasgas_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>DALRIPA</strong><br />' + (feature.properties['dalripa__1'] !== null ? autolinker.link(feature.properties['dalripa__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_dalri'] !== null ? '<img src="images/' + String(feature.properties['bild_dalri']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['dalripa_aj'] !== null ? autolinker.link(feature.properties['dalripa_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['dalripa_kl'] !== null ? autolinker.link(feature.properties['dalripa_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['dalripa_ka'] !== null ? autolinker.link(feature.properties['dalripa_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>FASAN</strong><br />' + (feature.properties['fasan_ajt'] !== null ? autolinker.link(feature.properties['fasan_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_fasan'] !== null ? '<img src="images/' + String(feature.properties['bild_fasan']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fasan_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['fasan_ajf'] !== null ? autolinker.link(feature.properties['fasan_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fasan_kloc"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['fasan_kloc'] !== null ? autolinker.link(feature.properties['fasan_kloc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fasan_kali"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['fasan_kali'] !== null ? autolinker.link(feature.properties['fasan_kali'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>FISKMÅS</strong><br />' + (feature.properties['fiskmas__1'] !== null ? autolinker.link(feature.properties['fiskmas__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_fiskm'] !== null ? '<img src="images/' + String(feature.properties['bild_fiskm']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fiskmas_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['fiskmas_aj'] !== null ? autolinker.link(feature.properties['fiskmas_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fiskmas_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['fiskmas_kl'] !== null ? autolinker.link(feature.properties['fiskmas_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fiskmas_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['fiskmas_ka'] !== null ? autolinker.link(feature.properties['fiskmas_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>FJÄLLRIPA</strong><br />' + (feature.properties['fjallripa1'] !== null ? autolinker.link(feature.properties['fjallripa1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_fjall'] !== null ? '<img src="images/' + String(feature.properties['bild_fjall']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa_"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['fjallripa_'] !== null ? autolinker.link(feature.properties['fjallripa_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_1"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['fjallrip_1'] !== null ? autolinker.link(feature.properties['fjallrip_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['fjallrip_2'] !== null ? autolinker.link(feature.properties['fjallrip_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>GRÅGÅS</strong><br />' + (feature.properties['gragas_ajt'] !== null ? autolinker.link(feature.properties['gragas_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_graga'] !== null ? '<img src="images/' + String(feature.properties['bild_graga']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="gragas_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['gragas_ajf'] !== null ? autolinker.link(feature.properties['gragas_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="gragas_klo"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['gragas_klo'] !== null ? autolinker.link(feature.properties['gragas_klo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="gragas_kal"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['gragas_kal'] !== null ? autolinker.link(feature.properties['gragas_kal'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>GRÅTRUT</strong><br />' + (feature.properties['gratrut__1'] !== null ? autolinker.link(feature.properties['gratrut__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_gratr'] !== null ? '<img src="images/' + String(feature.properties['bild_gratr']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="gratrut_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['gratrut_aj'] !== null ? autolinker.link(feature.properties['gratrut_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="gratrut_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['gratrut_kl'] !== null ? autolinker.link(feature.properties['gratrut_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="gratrut_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['gratrut_ka'] !== null ? autolinker.link(feature.properties['gratrut_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>GRÄSAND</strong><br />' + (feature.properties['grasand__1'] !== null ? autolinker.link(feature.properties['grasand__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_grasa'] !== null ? '<img src="images/' + String(feature.properties['bild_grasa']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="grasand_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['grasand_aj'] !== null ? autolinker.link(feature.properties['grasand_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="grasand_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['grasand_kl'] !== null ? autolinker.link(feature.properties['grasand_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="grasand_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['grasand_ka'] !== null ? autolinker.link(feature.properties['grasand_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>JÄRPE</strong><br />' + (feature.properties['jarpe_info'] !== null ? autolinker.link(feature.properties['jarpe_info'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_jarpe'] !== null ? '<img src="images/' + String(feature.properties['bild_jarpe']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="jarpe_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['jarpe_ajf'] !== null ? autolinker.link(feature.properties['jarpe_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="jarpe_kloc"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['jarpe_kloc'] !== null ? autolinker.link(feature.properties['jarpe_kloc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="jarpe_kali"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['jarpe_kali'] !== null ? autolinker.link(feature.properties['jarpe_kali'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KAJA</strong><br />' + (feature.properties['kaja_ajt'] !== null ? autolinker.link(feature.properties['kaja_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_kaja'] !== null ? '<img src="images/' + String(feature.properties['bild_kaja']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kaja_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['kaja_ajf'] !== null ? autolinker.link(feature.properties['kaja_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kaja_klock"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['kaja_klock'] !== null ? autolinker.link(feature.properties['kaja_klock'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kaja_kalib"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['kaja_kalib'] !== null ? autolinker.link(feature.properties['kaja_kalib'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KANADAGÅS</strong><br />' + (feature.properties['kanadagas1'] !== null ? autolinker.link(feature.properties['kanadagas1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_kanad'] !== null ? '<img src="images/' + String(feature.properties['bild_kanad']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kanadagas_"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['kanadagas_'] !== null ? autolinker.link(feature.properties['kanadagas_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kanadaga_1"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['kanadaga_1'] !== null ? autolinker.link(feature.properties['kanadaga_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kanadaga_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['kanadaga_2'] !== null ? autolinker.link(feature.properties['kanadaga_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KNIPA</strong><br />' + (feature.properties['knipa_ajt'] !== null ? autolinker.link(feature.properties['knipa_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_knipa'] !== null ? '<img src="images/' + String(feature.properties['bild_knipa']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="knipa_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['knipa_ajf'] !== null ? autolinker.link(feature.properties['knipa_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="knipa_kloc"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['knipa_kloc'] !== null ? autolinker.link(feature.properties['knipa_kloc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="knipa_kali"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['knipa_kali'] !== null ? autolinker.link(feature.properties['knipa_kali'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KRICKA</strong><br />' + (feature.properties['kricka_ajt'] !== null ? autolinker.link(feature.properties['kricka_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_krick'] !== null ? '<img src="images/' + String(feature.properties['bild_krick']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kricka_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['kricka_ajf'] !== null ? autolinker.link(feature.properties['kricka_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kricka_klo"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['kricka_klo'] !== null ? autolinker.link(feature.properties['kricka_klo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kricka_kal"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['kricka_kal'] !== null ? autolinker.link(feature.properties['kricka_kal'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KRÅKA</strong><br />' + (feature.properties['kraka_ajt'] !== null ? autolinker.link(feature.properties['kraka_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_kraka'] !== null ? '<img src="images/' + String(feature.properties['bild_kraka']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kraka_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['kraka_ajf'] !== null ? autolinker.link(feature.properties['kraka_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kraka_kloc"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['kraka_kloc'] !== null ? autolinker.link(feature.properties['kraka_kloc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kraka_kali"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['kraka_kali'] !== null ? autolinker.link(feature.properties['kraka_kali'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>MORKULLA</strong><br />' + (feature.properties['morkulla_1'] !== null ? autolinker.link(feature.properties['morkulla_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_morku'] !== null ? '<img src="images/' + String(feature.properties['bild_morku']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="morkulla_a"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['morkulla_a'] !== null ? autolinker.link(feature.properties['morkulla_a'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="morkulla_k"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['morkulla_k'] !== null ? autolinker.link(feature.properties['morkulla_k'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="morkulla_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['morkulla_2'] !== null ? autolinker.link(feature.properties['morkulla_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>NÖTSKRIKA</strong><br />' + (feature.properties['notskrika1'] !== null ? autolinker.link(feature.properties['notskrika1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_notsk'] !== null ? '<img src="images/' + String(feature.properties['bild_notsk']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="notskrika_"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['notskrika_'] !== null ? autolinker.link(feature.properties['notskrika_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="notskrik_1"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['notskrik_1'] !== null ? autolinker.link(feature.properties['notskrik_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="notskrik_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['notskrik_2'] !== null ? autolinker.link(feature.properties['notskrik_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>ORRE</strong><br />' + (feature.properties['orre_ajt'] !== null ? autolinker.link(feature.properties['orre_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_orre'] !== null ? '<img src="images/' + String(feature.properties['bild_orre']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="orre_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['orre_ajf'] !== null ? autolinker.link(feature.properties['orre_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="orre_klock"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['orre_klock'] !== null ? autolinker.link(feature.properties['orre_klock'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="orre_kalib"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['orre_kalib'] !== null ? autolinker.link(feature.properties['orre_kalib'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>ORRTUPP</strong><br />' + (feature.properties['orrtupp_in'] !== null ? autolinker.link(feature.properties['orrtupp_in'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_orrtu'] !== null ? '<img src="images/' + String(feature.properties['bild_orrtu']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="orrtupp_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['orrtupp_aj'] !== null ? autolinker.link(feature.properties['orrtupp_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="orrtupp_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['orrtupp_kl'] !== null ? autolinker.link(feature.properties['orrtupp_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="orrtupp_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['orrtupp_ka'] !== null ? autolinker.link(feature.properties['orrtupp_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>RAPPHÖNA</strong><br />' + (feature.properties['rapphona_1'] !== null ? autolinker.link(feature.properties['rapphona_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_rapph'] !== null ? '<img src="images/' + String(feature.properties['bild_rapph']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="rapphona_a"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['rapphona_a'] !== null ? autolinker.link(feature.properties['rapphona_a'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="rapphona_k"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['rapphona_k'] !== null ? autolinker.link(feature.properties['rapphona_k'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="rapphona_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['rapphona_2'] !== null ? autolinker.link(feature.properties['rapphona_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>RINGDUVA</strong><br />' + (feature.properties['ringduva_1'] !== null ? autolinker.link(feature.properties['ringduva_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_ringd'] !== null ? '<img src="images/' + String(feature.properties['bild_ringd']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="ringduva_a"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['ringduva_a'] !== null ? autolinker.link(feature.properties['ringduva_a'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="ringduva_k"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['ringduva_k'] !== null ? autolinker.link(feature.properties['ringduva_k'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="ringduva_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['ringduva_2'] !== null ? autolinker.link(feature.properties['ringduva_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>RÅKA</strong><br />' + (feature.properties['raka_info'] !== null ? autolinker.link(feature.properties['raka_info'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_raka'] !== null ? '<img src="images/' + String(feature.properties['bild_raka']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="raka_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['raka_ajf'] !== null ? autolinker.link(feature.properties['raka_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="raka_klock"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['raka_klock'] !== null ? autolinker.link(feature.properties['raka_klock'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="raka_kalib"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['raka_kalib'] !== null ? autolinker.link(feature.properties['raka_kalib'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>SJÖORRE</strong><br />' + (feature.properties['sjoorre__1'] !== null ? autolinker.link(feature.properties['sjoorre__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_sjoor'] !== null ? '<img src="images/' + String(feature.properties['bild_sjoor']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="sjoorre_aj"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['sjoorre_aj'] !== null ? autolinker.link(feature.properties['sjoorre_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="sjoorre_kl"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['sjoorre_kl'] !== null ? autolinker.link(feature.properties['sjoorre_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="sjoorre_ka"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['sjoorre_ka'] !== null ? autolinker.link(feature.properties['sjoorre_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>SKATA</strong><br />' + (feature.properties['skata_ajt'] !== null ? autolinker.link(feature.properties['skata_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_skata'] !== null ? '<img src="images/' + String(feature.properties['bild_skata']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="skata_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['skata_ajf'] !== null ? autolinker.link(feature.properties['skata_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="skata_kloc"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['skata_kloc'] !== null ? autolinker.link(feature.properties['skata_kloc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="skata_kali"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['skata_kali'] !== null ? autolinker.link(feature.properties['skata_kali'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>STORSKRAKE</strong><br />' + (feature.properties['storkrake1'] !== null ? autolinker.link(feature.properties['storkrake1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_stork'] !== null ? '<img src="images/' + String(feature.properties['bild_stork']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="storkrake_"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['storkrake_'] !== null ? autolinker.link(feature.properties['storkrake_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="storkrak_1"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['storkrak_1'] !== null ? autolinker.link(feature.properties['storkrak_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="storkrak_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['storkrak_2'] !== null ? autolinker.link(feature.properties['storkrak_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>TJÄDER</strong><br />' + (feature.properties['tjader_ajt'] !== null ? autolinker.link(feature.properties['tjader_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_tjade'] !== null ? '<img src="images/' + String(feature.properties['bild_tjade']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="tjader_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['tjader_ajf'] !== null ? autolinker.link(feature.properties['tjader_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="tjader_klo"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['tjader_klo'] !== null ? autolinker.link(feature.properties['tjader_klo'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="tjader_kal"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['tjader_kal'] !== null ? autolinker.link(feature.properties['tjader_kal'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>TJÄDERTUPP</strong><br />' + (feature.properties['tjadertu_1'] !== null ? autolinker.link(feature.properties['tjadertu_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_tjatu'] !== null ? '<img src="images/' + String(feature.properties['bild_tjatu']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="tjadertupp"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['tjadertupp'] !== null ? autolinker.link(feature.properties['tjadertupp'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="tjadertu_2"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['tjadertu_2'] !== null ? autolinker.link(feature.properties['tjadertu_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="tjadertu_3"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['tjadertu_3'] !== null ? autolinker.link(feature.properties['tjadertu_3'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>TRANA</strong><br />' + (feature.properties['trana_ajt'] !== null ? autolinker.link(feature.properties['trana_ajt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_trana'] !== null ? '<img src="images/' + String(feature.properties['bild_trana']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="trana_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['trana_ajf'] !== null ? autolinker.link(feature.properties['trana_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="trana_kloc"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['trana_kloc'] !== null ? autolinker.link(feature.properties['trana_kloc'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="trana_kali"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['trana_kali'] !== null ? autolinker.link(feature.properties['trana_kali'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>VIGG</strong><br />' + (feature.properties['vigg_alt'] !== null ? autolinker.link(feature.properties['vigg_alt'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_vigg'] !== null ? '<img src="images/' + String(feature.properties['bild_vigg']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="vigg_ajf"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['vigg_ajf'] !== null ? autolinker.link(feature.properties['vigg_ajf'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="vigg_klock"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['vigg_klock'] !== null ? autolinker.link(feature.properties['vigg_klock'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="vigg_kalib"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['vigg_kalib'] !== null ? autolinker.link(feature.properties['vigg_kalib'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>VITKINDAD GÅS</strong><br />' + (feature.properties['vitkindad1'] !== null ? autolinker.link(feature.properties['vitkindad1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['bild_vitki'] !== null ? '<img src="images/' + String(feature.properties['bild_vitki']).replace(/[\\\/:]/g, '_').trim() + '">' : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="vitkindad_"colspan="2"><strong>Jakt:</strong><br />' + (feature.properties['vitkindad_'] !== null ? autolinker.link(feature.properties['vitkindad_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="vitkinda_1"colspan="2"><strong>Tid:</strong><br />' + (feature.properties['vitkinda_1'] !== null ? autolinker.link(feature.properties['vitkinda_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="vitkinda_2"colspan="2"><strong>Kaliber:</strong><br />' + (feature.properties['vitkinda_2'] !== null ? autolinker.link(feature.properties['vitkinda_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_Lnsindelning_1_0() {
+            return {
+                pane: 'pane_Lnsindelning_1',
+                opacity: 1,
+                color: 'rgba(35,148,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(243,166,178,0.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_Lnsindelning_1');
+        map.getPane('pane_Lnsindelning_1').style.zIndex = 401;
+        map.getPane('pane_Lnsindelning_1').style['mix-blend-mode'] = 'normal';
+        var layer_Lnsindelning_1 = new L.geoJson(json_Lnsindelning_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_Lnsindelning_1',
+            layerName: 'layer_Lnsindelning_1',
+            pane: 'pane_Lnsindelning_1',
+            onEachFeature: pop_Lnsindelning_1,
+            style: style_Lnsindelning_1_0,
+        });
+        bounds_group.addLayer(layer_Lnsindelning_1);
+        map.addLayer(layer_Lnsindelning_1);
+        function pop_Grnsfrripjaktilvdalenskommun_2(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="kom_namn"colspan="2"><strong>kom_namn</strong><br />' + (feature.properties['kom_namn'] !== null ? autolinker.link(feature.properties['kom_namn'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="id"colspan="2"><strong>id</strong><br />' + (feature.properties['id'] !== null ? autolinker.link(feature.properties['id'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_aj"colspan="2"><strong>dalripa_aj</strong><br />' + (feature.properties['dalripa_aj'] !== null ? autolinker.link(feature.properties['dalripa_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa_"colspan="2"><strong>fjallripa_</strong><br />' + (feature.properties['fjallripa_'] !== null ? autolinker.link(feature.properties['fjallripa_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_in"colspan="2"><strong>dalripa_in</strong><br />' + (feature.properties['dalripa_in'] !== null ? autolinker.link(feature.properties['dalripa_in'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa1"colspan="2"><strong>fjallripa1</strong><br />' + (feature.properties['fjallripa1'] !== null ? autolinker.link(feature.properties['fjallripa1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_ka"colspan="2"><strong>dalripa_ka</strong><br />' + (feature.properties['dalripa_ka'] !== null ? autolinker.link(feature.properties['dalripa_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_1"colspan="2"><strong>fjallrip_1</strong><br />' + (feature.properties['fjallrip_1'] !== null ? autolinker.link(feature.properties['fjallrip_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_kl"colspan="2"><strong>dalripa_kl</strong><br />' + (feature.properties['dalripa_kl'] !== null ? autolinker.link(feature.properties['dalripa_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_2"colspan="2"><strong>fjallrip_2</strong><br />' + (feature.properties['fjallrip_2'] !== null ? autolinker.link(feature.properties['fjallrip_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="shape_leng"colspan="2"><strong>shape_leng</strong><br />' + (feature.properties['shape_leng'] !== null ? autolinker.link(feature.properties['shape_leng'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="shape_area"colspan="2"><strong>shape_area</strong><br />' + (feature.properties['shape_area'] !== null ? autolinker.link(feature.properties['shape_area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_Grnsfrripjaktilvdalenskommun_2_0() {
+            return {
+                pane: 'pane_Grnsfrripjaktilvdalenskommun_2',
+                opacity: 1,
+                color: 'rgba(35,35,35,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(0,0,0,0.0)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_Grnsfrripjaktilvdalenskommun_2');
+        map.getPane('pane_Grnsfrripjaktilvdalenskommun_2').style.zIndex = 402;
+        map.getPane('pane_Grnsfrripjaktilvdalenskommun_2').style['mix-blend-mode'] = 'normal';
+        var layer_Grnsfrripjaktilvdalenskommun_2 = new L.geoJson(json_Grnsfrripjaktilvdalenskommun_2, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_Grnsfrripjaktilvdalenskommun_2',
+            layerName: 'layer_Grnsfrripjaktilvdalenskommun_2',
+            pane: 'pane_Grnsfrripjaktilvdalenskommun_2',
+            onEachFeature: pop_Grnsfrripjaktilvdalenskommun_2,
+            style: style_Grnsfrripjaktilvdalenskommun_2_0,
+        });
+        bounds_group.addLayer(layer_Grnsfrripjaktilvdalenskommun_2);
+        map.addLayer(layer_Grnsfrripjaktilvdalenskommun_2);
+        function pop_NedanfrLappmarksgrnsen_3(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="omrade"colspan="2"><strong>omrade</strong><br />' + (feature.properties['omrade'] !== null ? autolinker.link(feature.properties['omrade'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_aj"colspan="2"><strong>dalripa_aj</strong><br />' + (feature.properties['dalripa_aj'] !== null ? autolinker.link(feature.properties['dalripa_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_in"colspan="2"><strong>dalripa_in</strong><br />' + (feature.properties['dalripa_in'] !== null ? autolinker.link(feature.properties['dalripa_in'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_ka"colspan="2"><strong>dalripa_ka</strong><br />' + (feature.properties['dalripa_ka'] !== null ? autolinker.link(feature.properties['dalripa_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_kl"colspan="2"><strong>dalripa_kl</strong><br />' + (feature.properties['dalripa_kl'] !== null ? autolinker.link(feature.properties['dalripa_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa_"colspan="2"><strong>fjallripa_</strong><br />' + (feature.properties['fjallripa_'] !== null ? autolinker.link(feature.properties['fjallripa_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa1"colspan="2"><strong>fjallripa1</strong><br />' + (feature.properties['fjallripa1'] !== null ? autolinker.link(feature.properties['fjallripa1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_1"colspan="2"><strong>fjallrip_1</strong><br />' + (feature.properties['fjallrip_1'] !== null ? autolinker.link(feature.properties['fjallrip_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_2"colspan="2"><strong>fjallrip_2</strong><br />' + (feature.properties['fjallrip_2'] !== null ? autolinker.link(feature.properties['fjallrip_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="shape_leng"colspan="2"><strong>shape_leng</strong><br />' + (feature.properties['shape_leng'] !== null ? autolinker.link(feature.properties['shape_leng'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="shape_area"colspan="2"><strong>shape_area</strong><br />' + (feature.properties['shape_area'] !== null ? autolinker.link(feature.properties['shape_area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_NedanfrLappmarksgrnsen_3_0() {
+            return {
+                pane: 'pane_NedanfrLappmarksgrnsen_3',
+                opacity: 1,
+                color: 'rgba(226,18,219,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 3.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(206,147,216,0.403921568627451)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_NedanfrLappmarksgrnsen_3');
+        map.getPane('pane_NedanfrLappmarksgrnsen_3').style.zIndex = 403;
+        map.getPane('pane_NedanfrLappmarksgrnsen_3').style['mix-blend-mode'] = 'normal';
+        var layer_NedanfrLappmarksgrnsen_3 = new L.geoJson(json_NedanfrLappmarksgrnsen_3, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_NedanfrLappmarksgrnsen_3',
+            layerName: 'layer_NedanfrLappmarksgrnsen_3',
+            pane: 'pane_NedanfrLappmarksgrnsen_3',
+            onEachFeature: pop_NedanfrLappmarksgrnsen_3,
+            style: style_NedanfrLappmarksgrnsen_3_0,
+        });
+        bounds_group.addLayer(layer_NedanfrLappmarksgrnsen_3);
+        map.addLayer(layer_NedanfrLappmarksgrnsen_3);
+        function pop_OvanfrLapplandsgrnsen_4(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td class="visible-with-data" id="omrade"colspan="2"><strong>omrade</strong><br />' + (feature.properties['omrade'] !== null ? autolinker.link(feature.properties['omrade'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_aj"colspan="2"><strong>dalripa_aj</strong><br />' + (feature.properties['dalripa_aj'] !== null ? autolinker.link(feature.properties['dalripa_aj'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_in"colspan="2"><strong>dalripa_in</strong><br />' + (feature.properties['dalripa_in'] !== null ? autolinker.link(feature.properties['dalripa_in'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_ka"colspan="2"><strong>dalripa_ka</strong><br />' + (feature.properties['dalripa_ka'] !== null ? autolinker.link(feature.properties['dalripa_ka'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="dalripa_kl"colspan="2"><strong>dalripa_kl</strong><br />' + (feature.properties['dalripa_kl'] !== null ? autolinker.link(feature.properties['dalripa_kl'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa_"colspan="2"><strong>fjallripa_</strong><br />' + (feature.properties['fjallripa_'] !== null ? autolinker.link(feature.properties['fjallripa_'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallripa1"colspan="2"><strong>fjallripa1</strong><br />' + (feature.properties['fjallripa1'] !== null ? autolinker.link(feature.properties['fjallripa1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_1"colspan="2"><strong>fjallrip_1</strong><br />' + (feature.properties['fjallrip_1'] !== null ? autolinker.link(feature.properties['fjallrip_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="fjallrip_2"colspan="2"><strong>fjallrip_2</strong><br />' + (feature.properties['fjallrip_2'] !== null ? autolinker.link(feature.properties['fjallrip_2'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="shape_leng"colspan="2"><strong>shape_leng</strong><br />' + (feature.properties['shape_leng'] !== null ? autolinker.link(feature.properties['shape_leng'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="shape_area"colspan="2"><strong>shape_area</strong><br />' + (feature.properties['shape_area'] !== null ? autolinker.link(feature.properties['shape_area'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_OvanfrLapplandsgrnsen_4_0() {
+            return {
+                pane: 'pane_OvanfrLapplandsgrnsen_4',
+                opacity: 1,
+                color: 'rgba(37,155,36,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 3.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(37,155,36,0.24705882352941178)',
+                interactive: false,
+            }
+        }
+        map.createPane('pane_OvanfrLapplandsgrnsen_4');
+        map.getPane('pane_OvanfrLapplandsgrnsen_4').style.zIndex = 404;
+        map.getPane('pane_OvanfrLapplandsgrnsen_4').style['mix-blend-mode'] = 'normal';
+        var layer_OvanfrLapplandsgrnsen_4 = new L.geoJson(json_OvanfrLapplandsgrnsen_4, {
+            attribution: '',
+            interactive: false,
+            dataVar: 'json_OvanfrLapplandsgrnsen_4',
+            layerName: 'layer_OvanfrLapplandsgrnsen_4',
+            pane: 'pane_OvanfrLapplandsgrnsen_4',
+            onEachFeature: pop_OvanfrLapplandsgrnsen_4,
+            style: style_OvanfrLapplandsgrnsen_4_0,
+        });
+        bounds_group.addLayer(layer_OvanfrLapplandsgrnsen_4);
+        map.addLayer(layer_OvanfrLapplandsgrnsen_4);
+        function pop_GrnslvsomrdetillFinland_5(feature, layer) {
+            layer.on({
+                mouseout: function(e) {
+                    for (var i in e.target._eventParents) {
+                        if (typeof e.target._eventParents[i].resetStyle === 'function') {
+                            e.target._eventParents[i].resetStyle(e.target);
+                        }
+                    }
+                },
+                mouseover: highlightFeature,
+            });
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2"><strong>GRÄNSÄLVSOMRÅDE TILL FINLAND</strong><br />' + (feature.properties['field'] !== null ? autolinker.link(feature.properties['field'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>BLÄSAND</strong><br />' + (feature.properties['blasand_no'] !== null ? autolinker.link(feature.properties['blasand_no'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="blasand__1"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['blasand__1'] !== null ? autolinker.link(feature.properties['blasand__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>GRÅGÅS</strong><br />' + (feature.properties['GRAGAS'] !== null ? autolinker.link(feature.properties['GRAGAS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['GRAGAS_JAK'] !== null ? autolinker.link(feature.properties['GRAGAS_JAK'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>GRÄSAND</strong><br />' + (feature.properties['grasand_no'] !== null ? autolinker.link(feature.properties['grasand_no'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="grasand__1"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['grasand__1'] !== null ? autolinker.link(feature.properties['grasand__1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KANADAGÅS</strong><br />' + (feature.properties['KANADAGÅS'] !== null ? autolinker.link(feature.properties['KANADAGÅS'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="KAN_GAS_JA"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['KAN_GAS_JA'] !== null ? autolinker.link(feature.properties['KAN_GAS_JA'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KNIPA</strong><br />' + (feature.properties['KNIPA'] !== null ? autolinker.link(feature.properties['KNIPA'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="KNIPA_JAKT"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['KNIPA_JAKT'] !== null ? autolinker.link(feature.properties['KNIPA_JAKT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>KRICKA</strong><br />' + (feature.properties['kricka_nor'] !== null ? autolinker.link(feature.properties['kricka_nor'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="kricka_n_1"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['kricka_n_1'] !== null ? autolinker.link(feature.properties['kricka_n_1'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>STORKRAKE</strong><br />' + (feature.properties['STORKRAKE'] !== null ? autolinker.link(feature.properties['STORKRAKE'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="STORK_JAKT"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['STORK_JAKT'] !== null ? autolinker.link(feature.properties['STORK_JAKT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2"><strong>VIGG</strong><br />' + (feature.properties['VIGG'] !== null ? autolinker.link(feature.properties['VIGG'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td class="visible-with-data" id="VIGG_JAKTT"colspan="2"><strong>Jakttid:</strong><br />' + (feature.properties['VIGG_JAKTT'] !== null ? autolinker.link(feature.properties['VIGG_JAKTT'].toLocaleString()) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+            var popup = layer.getPopup();
+            var content = popup.getContent();
+            var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
+            popup.setContent(updatedContent);
+        }
+
+        function style_GrnslvsomrdetillFinland_5_0() {
+            return {
+                pane: 'pane_GrnslvsomrdetillFinland_5',
+                opacity: 1,
+                color: 'rgba(3,154,255,1.0)',
+                dashArray: '',
+                lineCap: 'square',
+                lineJoin: 'bevel',
+                weight: 8.0,
+                fillOpacity: 0,
+                interactive: true,
+            }
+        }
+        map.createPane('pane_GrnslvsomrdetillFinland_5');
+        map.getPane('pane_GrnslvsomrdetillFinland_5').style.zIndex = 405;
+        map.getPane('pane_GrnslvsomrdetillFinland_5').style['mix-blend-mode'] = 'normal';
+        var layer_GrnslvsomrdetillFinland_5 = new L.geoJson(json_GrnslvsomrdetillFinland_5, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_GrnslvsomrdetillFinland_5',
+            layerName: 'layer_GrnslvsomrdetillFinland_5',
+            pane: 'pane_GrnslvsomrdetillFinland_5',
+            onEachFeature: pop_GrnslvsomrdetillFinland_5,
+            style: style_GrnslvsomrdetillFinland_5_0,
+        });
+        bounds_group.addLayer(layer_GrnslvsomrdetillFinland_5);
+        map.addLayer(layer_GrnslvsomrdetillFinland_5);
+        var baseMaps = {};
+        var overlaysTree = [
+            {label: '<img src="legend/GrnslvsomrdetillFinland_5.png" /> Gränsälvsområde till Finland', layer: layer_GrnslvsomrdetillFinland_5},
+            {label: '<img src="legend/OvanfrLapplandsgrnsen_4.png" /> Ovanför Lapplandsgränsen', layer: layer_OvanfrLapplandsgrnsen_4},
+            {label: '<img src="legend/NedanfrLappmarksgrnsen_3.png" /> Nedanför Lappmarksgränsen', layer: layer_NedanfrLappmarksgrnsen_3},
+            {label: '<img src="legend/Grnsfrripjaktilvdalenskommun_2.png" /> Gräns för ripjakt i Älvdalens kommun', layer: layer_Grnsfrripjaktilvdalenskommun_2},
+            {label: '<img src="legend/Lnsindelning_1.png" /> Länsindelning', layer: layer_Lnsindelning_1},
+            {label: "OSM Standard", layer: layer_OSMStandard_0},]
+        var lay = L.control.layers.tree(null, overlaysTree,{
+            //namedToggle: true,
+            //selectorBack: false,
+            //closedSymbol: '&#8862; &#x1f5c0;',
+            //openedSymbol: '&#8863; &#x1f5c1;',
+            //collapseAll: 'Collapse all',
+            //expandAll: 'Expand all',
+            collapsed: true,
+        });
+        lay.addTo(map);
+        setBounds();
+        </script>
+    </body>
+</html>
