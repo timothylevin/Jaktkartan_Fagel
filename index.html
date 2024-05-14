@@ -114,8 +114,8 @@
             });
             var popupContent = '<table>\
                     <tr>\
-                        <td colspan="2"><strong>LÄN</strong><br /><br />' + (feature.properties['lan_namn'] !== null ? autolinker.link(feature.properties['lan_namn'].toLocaleString()) : '') + '</td>\
-                    </tr>\
+                        <td colspan="2"><strong>LÄN</strong><br />' + (feature.properties['lan_namn'] !== null ? autolinker.link(feature.properties['lan_namn'].toLocaleString()) : '') + '</td>\
+                    <br /></tr>\
                     <tr>\
                         <td colspan="2"><strong>BLÄSAND</strong><br />' + (feature.properties['blasand__1'] !== null ? autolinker.link(feature.properties['blasand__1'].toLocaleString()) : '') + '</td>\
                     </tr>\
