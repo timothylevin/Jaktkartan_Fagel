@@ -423,6 +423,9 @@ svg.leaflet-image-layer.leaflet-interactive path {
 .leaflet-left .leaflet-control-scale {
 	margin-left: 5px;
 	}
+.leaflet-control-attribution {
+    display: none !important;
+}
 .leaflet-bottom .leaflet-control-scale {
 	margin-bottom: 5px;
 	}
