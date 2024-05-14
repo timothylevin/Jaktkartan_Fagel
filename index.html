@@ -568,6 +568,7 @@
                     </tr>\
                 </table>';
             layer.bindPopup(popupContent, {maxHeight: 400});
+            layer.bindPopup(popupContent, {maxWidth: "auto"});
             var popup = layer.getPopup();
             var content = popup.getContent();
             var updatedContent = removeEmptyRowsFromPopupContent(content, feature);
