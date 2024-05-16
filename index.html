@@ -1000,5 +1000,23 @@
         lay.addTo(map);
         setBounds();
         </script>
+        // Vänta tills dokumentet har laddats helt
+document.addEventListener('DOMContentLoaded', function() {
+    // Hämta bilder inne i popup-fönstret
+    var images = document.querySelectorAll('.leaflet-popup-content img');
+
+    // Loopa igenom bilderna för att hitta den bredaste
+    var maxWidth = 0;
+    images.forEach(function(image) {
+        if (image.width > maxWidth) {
+            maxWidth = image.width;
+        }
+    });
+
+    // Tilldela textens bredd till den bredaste bilden
+    var popupContent = document.querySelector('.leaflet-popup-content');
+    popupContent.style.maxWidth = maxWidth + 'px';
+});
+
     </body>
 </html>
