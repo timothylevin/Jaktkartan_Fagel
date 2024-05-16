@@ -37,7 +37,7 @@ th {
 }
 
 .leaflet-popup-content {
-    max-width: 100%; /* Ändra maxbredden till 100% för att anpassa sig till popupfönstrets bredd */
+    max-width: 400px; /* Behåll storleken på popupfönstret för större skärmar */
     overflow-y: scroll;
 }
 
@@ -50,7 +50,7 @@ td {
 }
 
 td img {
-    width: 100%; /* Gör bilderna ta upp hela bredden av popupfönstret */
+    max-width: 200px; /* Justera storleken på bilderna för större skärmar */
     height: auto; /* Så att bildförhållandet bevaras */
     display: block; /* För att hantera korrekt layout */
     border-radius: 5px; /* För att lägga till avrundade hörn */
@@ -184,4 +184,17 @@ a {
 
 .leaflet-popup-pane {
     z-index: 700;
+}
+
+@media only screen and (max-width: 768px) {
+    .leaflet-popup-content {
+        max-width: 90%; /* Justera storleken på popupfönstret för mobila enheter */
+    }
+    
+    td img {
+        max-width: 100%; /* Göra bilderna ta upp hela bredden av popupfönstret */
+        height: auto; /* Så att bildförhållandet bevaras */
+        display: block; /* För att hantera korrekt layout */
+        border-radius: 5px; /* För att lägga till avrundade hörn */
+    }
 }
