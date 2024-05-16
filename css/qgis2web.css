@@ -1,4 +1,5 @@
-#map {
+
+        #map {
             background-color: #ffffff
         }
         th {
@@ -25,23 +26,21 @@
             width:auto!important;
             height: auto!important;
             overflow: auto;
-            max-height: 30vw;
-            max-width: 70vw;
+            max-height: 35vw;
+            max-width: 35vw;
             border-bottom: unset!important;
             border-top: unset!important;
         }
-        .leaflet-popup-content{
-            max-height: 30vw;
-                min-height: 60vh;
-            max-width: 70vw;
-                min-width: 20vw;
-            overflow: auto;
+        .leaflet-popup-content {
+    max-width: 400px;
+    height: 400px;
+    overflow-y: scroll;
         }
         th {
-            min-width: 89px;
+            min-width: 75px;
         }
         td {
-            min-width: 89px;
+            min-width: 75px;
         }
         td img {
             max-height: 50vw;
