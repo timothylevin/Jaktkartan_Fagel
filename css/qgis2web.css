@@ -37,7 +37,7 @@ th {
 }
 
 .leaflet-popup-content {
-    max-width: 400px; /* Behåll storleken på popupfönstret för större skärmar */
+    max-width: 90%; /* Justera storleken på popupfönstret för mobila enheter */
     overflow-y: scroll;
 }
 
@@ -50,7 +50,7 @@ td {
 }
 
 td img {
-    max-width: 200px; /* Justera storleken på bilderna för större skärmar */
+    max-width: 100%; /* Göra bilderna ta upp hela bredden av popupfönstret */
     height: auto; /* Så att bildförhållandet bevaras */
     display: block; /* För att hantera korrekt layout */
     border-radius: 5px; /* För att lägga till avrundade hörn */
@@ -186,15 +186,8 @@ a {
     z-index: 700;
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (min-width: 769px) {
     .leaflet-popup-content {
-        max-width: 90%; /* Justera storleken på popupfönstret för mobila enheter */
-    }
-    
-    td img {
-        max-width: 100%; /* Göra bilderna ta upp hela bredden av popupfönstret */
-        height: auto; /* Så att bildförhållandet bevaras */
-        display: block; /* För att hantera korrekt layout */
-        border-radius: 5px; /* För att lägga till avrundade hörn */
+        max-width: 300px; /* Justera storleken på popupfönstret för större skärmar */
     }
 }
